@@ -1,0 +1,47 @@
+spring:
+  application:
+    name: evaluate-code-sandbox-service
+  # 添加nacos地址，进行注册
+  cloud:
+    nacos:
+      discovery:
+        server-addr: localhost:8848
+  # 默认 dev 环境
+  profiles:
+    active: dev
+  # 支持 swagger3
+  mvc:
+    pathmatch:
+      matching-strategy: ant_path_matcher
+  # 数据库配置
+  # todo 需替换配置
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/evaluate-oj
+    username: root
+    password: H2232285004
+  # Redis 配置
+  redis:
+    database: 3
+    host: localhost
+    port: 6379
+    timeout: 5000
+  # 文件上传
+  servlet:
+    multipart:
+      # 大小限制
+      max-file-size: 10MB
+server:
+  port: 8105
+  servlet:
+    context-path: /api/codesanbox
+    # cookie 30 天过期
+    session:
+      cookie:
+        max-age: 2592000
+        path: /api
+# 接口文档配置
+knife4j:
+  enable: true
+codesandbox:
+  type: remote

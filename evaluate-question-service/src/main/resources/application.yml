@@ -1,0 +1,57 @@
+spring:
+  application:
+    name: evaluate-question-service
+  cloud:
+    nacos:
+      discovery:
+        server-addr: 192.168.42.1:8848
+#        server-addr: localhost:8848
+  # 默认 dev 环境
+  profiles:
+    active: dev
+  # 支持 swagger3
+  mvc:
+    pathmatch:
+      matching-strategy: ant_path_matcher
+  # 数据库配置
+  # todo 需替换配置
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/evaluate-oj
+    username: root
+    password: H2232285004
+  # Redis 配置
+  redis:
+    database: 3
+    host: localhost
+    port: 6379
+    timeout: 5000
+  # 文件上传
+  servlet:
+    multipart:
+      # 大小限制
+      max-file-size: 10MB
+server:
+  port: 8103
+#  port: 8080
+  servlet:
+    context-path: /api/question
+    # cookie 30 天过期
+    session:
+      cookie:
+        max-age: 2592000
+        path: /api
+mybatis-plus:
+  configuration:
+    map-underscore-to-camel-case: false
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+  global-config:
+    db-config:
+      logic-delete-field: isDelete # 全局逻辑删除的实体字段名
+      logic-delete-value: 1 # 逻辑已删除值（默认为 1）
+      logic-not-delete-value: 0 # 逻辑未删除值（默认为 0）
+# 接口文档配置
+knife4j:
+  enable: true
+codesandbox:
+  type: remote
