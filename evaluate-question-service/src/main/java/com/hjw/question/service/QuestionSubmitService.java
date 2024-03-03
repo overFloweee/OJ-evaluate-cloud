@@ -8,7 +8,10 @@ import com.hjw.model.dto.questionsubmit.QuestionSubmitAddRequest;
 import com.hjw.model.dto.questionsubmit.QuestionSubmitQueryRequest;
 import com.hjw.model.entity.QuestionSubmit;
 import com.hjw.model.entity.User;
+import com.hjw.model.enums.JudgeHistoryEnum;
 import com.hjw.model.vo.QuestionSubmitVO;
+
+import java.util.List;
 
 /**
  * @author 86157
@@ -49,4 +52,11 @@ public interface QuestionSubmitService extends IService<QuestionSubmit>
      * 分页获取提交代码 封装
      */
     Page<QuestionSubmitVO> getQuestionSubmitVOPage(Page<QuestionSubmit> page);
+
+    /**
+     *  该题 用户是否已经 完成，3 - 完成
+     * @param questionId
+     * @return
+     */
+    JudgeHistoryEnum queryHistoryJudge(long questionId);
 }

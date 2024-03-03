@@ -23,6 +23,10 @@ public class QuestionUpdateRequest implements Serializable {
     private String title;
 
     /**
+     * 题目难度
+     */
+    private Integer difficulty;
+    /**
      * 内容
      */
     private String content;

@@ -58,6 +58,12 @@ public class QuestionVO implements Serializable
     private JudgeConfig judgeConfig;
 
     /**
+     * 题目难度
+     */
+    private Integer difficulty;
+
+
+    /**
      * 点赞数
      */
     private Integer thumbNum;
@@ -86,6 +92,16 @@ public class QuestionVO implements Serializable
      * 创建人信息
      */
     private UserVO userVO;
+
+    /**
+     * 判断当前用户是否已经做过该题
+     */
+    private boolean hasTried = false;
+
+    /**
+     * 用户代码
+     */
+    private String submitCode;
 
     private static final long serialVersionUID = 1L;
 

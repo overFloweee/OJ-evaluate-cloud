@@ -4,6 +4,7 @@ package com.hjw.question.service.impl;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -18,9 +19,13 @@ import com.hjw.model.dto.questionsubmit.QuestionSubmitQueryRequest;
 import com.hjw.model.entity.Question;
 import com.hjw.model.entity.QuestionSubmit;
 import com.hjw.model.entity.User;
+import com.hjw.model.enums.JudgeHistoryEnum;
+import com.hjw.model.enums.JudgeInfoEnum;
 import com.hjw.model.enums.QuestionSubmitLanguageEnum;
 import com.hjw.model.enums.QuestionSubmitStatusEnum;
 import com.hjw.model.vo.QuestionSubmitVO;
+import com.hjw.model.vo.QuestionVO;
+import com.hjw.model.vo.UserVO;
 import com.hjw.question.mapper.QuestionSubmitMapper;
 import com.hjw.question.rabbitmq.MyMessageProducer;
 import com.hjw.question.service.QuestionService;
@@ -28,11 +33,11 @@ import com.hjw.question.service.QuestionSubmitService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 /**
@@ -46,6 +51,8 @@ public class QuestionSubmitServiceImpl extends ServiceImpl<QuestionSubmitMapper,
         implements QuestionSubmitService
 {
 
+    @Resource
+    @Lazy
     private final QuestionService questionService;
     private final UserFeignClient userFeignClient;
     private final HttpServletRequest request;
@@ -67,7 +74,7 @@ public class QuestionSubmitServiceImpl extends ServiceImpl<QuestionSubmitMapper,
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
         // 校验编程语言是否合法
-        String language = questionSubmitAddRequest.getLanguage();
+        String language = questionSubmitAddRequest.getSubmitLanguage();
         QuestionSubmitLanguageEnum languageEnum = QuestionSubmitLanguageEnum.getEnumByValue(language);
         if (languageEnum == null)
         {
@@ -90,13 +97,15 @@ public class QuestionSubmitServiceImpl extends ServiceImpl<QuestionSubmitMapper,
         // 初始化状态
         questionSubmit.setStatus(QuestionSubmitStatusEnum.WAITING.getValue());
         questionSubmit.setJudgeInfo("{}");
+        questionSubmit.setLanguage(questionSubmitAddRequest.getSubmitLanguage());
+        questionSubmit.setBackendCode(questionSubmitAddRequest.getSubmitCode());
 
         boolean isSave = this.save(questionSubmit);
         if (!isSave)
         {
             throw new BusinessException(ErrorCode.SYSTEM_ERROR, "用户提交失败");
         }
-        // todo 提交到消息队列
+        // 提交到消息队列
         Long questionSubmitId = questionSubmit.getId();
         myMessageProducer.sendMessage("code_exchange", "my_routingKey", questionSubmitId.toString());
 
@@ -133,8 +142,8 @@ public class QuestionSubmitServiceImpl extends ServiceImpl<QuestionSubmitMapper,
         queryWrapper.lambda().eq(StrUtil.isNotBlank(language), QuestionSubmit::getLanguage, language);
         queryWrapper.lambda()
                 .like(QuestionSubmitStatusEnum.getEnumByValue(status) != null, QuestionSubmit::getStatus, status);
-        queryWrapper.lambda().eq(ObjectUtil.isNotEmpty(questionId), QuestionSubmit::getQuestionId, questionId);
-        queryWrapper.lambda().eq(ObjectUtil.isNotEmpty(userId), QuestionSubmit::getUserId, userId);
+        queryWrapper.lambda().like(ObjectUtil.isNotEmpty(questionId), QuestionSubmit::getQuestionId, questionId);
+        queryWrapper.lambda().like(ObjectUtil.isNotEmpty(userId), QuestionSubmit::getUserId, userId);
         queryWrapper.lambda().eq(QuestionSubmit::getIsDelete, false);
         // 根据 查询条件进行排序 ，sortField - 需要排序的字段， sortOrder - 排序方式 asc、desc
         queryWrapper.orderBy(SqlUtils.validSortField(sortField), sortOrder.equals(CommonConstant.SORT_ORDER_ASC),
@@ -157,7 +166,7 @@ public class QuestionSubmitServiceImpl extends ServiceImpl<QuestionSubmitMapper,
         //     不是两者，则需要脱敏
         if (!userFeignClient.isAdmin(loginUser) && !questionSubmit.getUserId().equals(userId))
         {
-            questionSubmitVO.setCode(null);
+            questionSubmitVO.setFrontendCode(null);
         }
 
 
@@ -183,15 +192,56 @@ public class QuestionSubmitServiceImpl extends ServiceImpl<QuestionSubmitMapper,
         Page<QuestionSubmitVO> questionVOPage = new Page<>(current, size, total);
 
 
-        List<QuestionSubmitVO> questionSubmitVOList = questionSubmitList.stream()
-                .map(questionSubmit -> this.getQuestionSubmitVO(questionSubmit, loginUser))
-                .collect(Collectors.toList());
+        List<QuestionSubmitVO> questionSubmitVOList = questionSubmitList.stream().map(questionSubmit ->
+        {
+            QuestionSubmitVO questionSubmitVO = this.getQuestionSubmitVO(questionSubmit, loginUser);
+            // 封装userVO
+            User user = userFeignClient.getById(questionSubmit.getUserId());
+            UserVO userVO = userFeignClient.getUserVO(user);
+            questionSubmitVO.setUserVO(userVO);
+            // 封装questionVO
+            Question question = questionService.getById(questionSubmit.getQuestionId());
+            QuestionVO questionVO = questionService.getQuestionVO(question);
+            questionSubmitVO.setQuestionVO(questionVO);
+            return questionSubmitVO;
+        }).collect(Collectors.toList());
         questionVOPage.setRecords(questionSubmitVOList);
 
         return questionVOPage;
 
     }
 
+
+    @Override
+    public JudgeHistoryEnum queryHistoryJudge(long questionId)
+    {
+        User loginUser = userFeignClient.getLoginUser(request);
+        Long userId = loginUser.getId();
+
+        LambdaQueryWrapper<QuestionSubmit> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(QuestionSubmit::getQuestionId, questionId);
+        wrapper.eq(QuestionSubmit::getUserId, userId);
+        List<QuestionSubmit> list = this.list(wrapper);
+
+        if (CollectionUtils.isEmpty(list))
+        {
+            // 无提交记录
+            return JudgeHistoryEnum.NO_TRIED;
+        }
+
+        for (QuestionSubmit questionSubmit : list)
+        {
+            String judgeInfo = questionSubmit.getJudgeInfo();
+            if (judgeInfo.contains(JudgeInfoEnum.ACCEPTED.getValue()))
+            {
+                // 有一个通过记录，则通过
+                return JudgeHistoryEnum.ACCEPTED;
+            }
+        }
+
+        // 尝试过
+        return JudgeHistoryEnum.HAVE_TRIED;
+    }
 }
 
 

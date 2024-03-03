@@ -4,8 +4,7 @@ spring:
   cloud:
     nacos:
       discovery:
-        server-addr: 192.168.42.1:8848
-#        server-addr: localhost:8848
+        server-addr: localhost:8848
   # 默认 dev 环境
   profiles:
     active: dev
@@ -33,7 +32,6 @@ spring:
       max-file-size: 10MB
 server:
   port: 8103
-#  port: 8080
   servlet:
     context-path: /api/question
     # cookie 30 天过期

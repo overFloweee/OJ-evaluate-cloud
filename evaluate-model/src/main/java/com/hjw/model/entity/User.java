@@ -59,6 +59,26 @@ public class User implements Serializable {
     private String userRole;
 
     /**
+     * 0 - 女，1 - 男
+     */
+    private Integer gender;
+
+    /**
+     * 0 - 正常，1 - 注销，2 - 封号
+     */
+    private Integer userState;
+
+    /**
+     * 手机号
+     */
+    private String phone;
+
+    /**
+     * 邮箱
+     */
+    private String email;
+
+    /**
      * 创建时间
      */
     private Date createTime;

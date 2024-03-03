@@ -14,12 +14,12 @@ public class QuestionSubmitAddRequest implements Serializable {
     /**
      * 编程语言
      */
-    private String language;
+    private String submitLanguage;
 
     /**
      * 用户代码
      */
-    private String code;
+    private String submitCode;
 
     /**
      * 题目id

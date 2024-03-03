@@ -1,7 +1,6 @@
 spring:
   application:
     name: evaluate-judge-service
-  # 添加nacos地址，进行注册
   cloud:
     nacos:
       discovery:

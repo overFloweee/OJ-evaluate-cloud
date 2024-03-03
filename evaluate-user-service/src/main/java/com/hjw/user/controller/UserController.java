@@ -128,12 +128,11 @@ public class UserController
      * 创建用户
      *
      * @param userAddRequest
-     * @param request
      * @return
      */
     @PostMapping("/add")
     @AuthCheck(mustRole = UserConstant.ADMIN_ROLE)
-    public R<Long> addUser(@RequestBody UserAddRequest userAddRequest, HttpServletRequest request)
+    public R<Long> addUser(@RequestBody UserAddRequest userAddRequest)
     {
         if (userAddRequest == null)
         {
@@ -173,13 +172,11 @@ public class UserController
      * 更新用户
      *
      * @param userUpdateRequest
-     * @param request
      * @return
      */
     @PostMapping("/update")
     @AuthCheck(mustRole = UserConstant.ADMIN_ROLE)
-    public R<Boolean> updateUser(@RequestBody UserUpdateRequest userUpdateRequest, HttpServletRequest request
-    )
+    public R<Boolean> updateUser(@RequestBody UserUpdateRequest userUpdateRequest)
     {
         if (userUpdateRequest == null || userUpdateRequest.getId() == null)
         {
@@ -222,8 +219,12 @@ public class UserController
     @GetMapping("/get/vo")
     public R<UserVO> getUserVOById(long id, HttpServletRequest request)
     {
-        R<User> response = getUserById(id, request);
-        User user = response.getData();
+        if (id <= 0)
+        {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        User user = userService.getById(id);
+
         return R.success(userService.getUserVO(user));
     }
 

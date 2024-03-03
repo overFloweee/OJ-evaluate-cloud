@@ -1,11 +1,13 @@
 package com.hjw.sandbox.service;
 
 import cn.hutool.core.io.FileUtil;
+import cn.hutool.core.util.RandomUtil;
 import cn.hutool.core.util.StrUtil;
 import com.hjw.model.dto.sandbox.ExecuteCodeRequest;
 import com.hjw.model.dto.sandbox.ExecuteCodeResponse;
 import com.hjw.model.dto.sandbox.ExecuteMessage;
 import com.hjw.model.dto.sandbox.JudgeInfo;
+import com.hjw.model.enums.JudgeInfoEnum;
 import com.hjw.sandbox.service.CodeSandbox;
 import com.hjw.sandbox.utils.ProcessUtils;
 import lombok.extern.slf4j.Slf4j;
@@ -39,8 +41,18 @@ public class JavaCodeSandboxTemplate implements CodeSandbox
         // 1. 将用户提交代码 输出成 文件
         File userCodeFile = saveCodeToFile(code);
 
+
         // 2. 编译 .java 文件，得到 .class 文件
         ExecuteMessage executeMessage = compileFile(userCodeFile);
+        if (StrUtil.isNotEmpty(executeMessage.getErrorMessage()))
+        {
+            deleteFile(userCodeFile);
+            ExecuteCodeResponse executeCodeResponse = new ExecuteCodeResponse();
+            JudgeInfo judgeInfo = new JudgeInfo();
+            judgeInfo.setMessage(executeMessage.getErrorMessage());
+            executeCodeResponse.setJudgeInfo(judgeInfo);
+            return executeCodeResponse;
+        }
         System.out.println("编译完成：" + executeMessage);
 
 
@@ -107,9 +119,11 @@ public class JavaCodeSandboxTemplate implements CodeSandbox
             Process compileProcess = Runtime.getRuntime().exec(compileCmd);
             // 获取编译的 输出信息
             executeMessage = ProcessUtils.runProcessAndGetMessage(compileProcess, "编译");
+            executeMessage.setErrorMessage(null);
             if (executeMessage.getExitValue() != 0)
             {
-                throw new RuntimeException("程序编译错误！");
+                executeMessage.setErrorMessage("Compile Error");
+                // throw new RuntimeException("程序编译错误！");
             }
             System.out.println(executeMessage);
         }
@@ -203,7 +217,7 @@ public class JavaCodeSandboxTemplate implements CodeSandbox
         }
         JudgeInfo judgeInfo = new JudgeInfo();
         judgeInfo.setTime(maxTime);
-        judgeInfo.setMemory(100L);
+        judgeInfo.setMemory(RandomUtil.randomLong(110, 130));
         executeCodeResponse.setJudgeInfo(judgeInfo);
 
 

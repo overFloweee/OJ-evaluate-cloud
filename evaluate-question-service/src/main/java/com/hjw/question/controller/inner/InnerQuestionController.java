@@ -38,4 +38,10 @@ public class InnerQuestionController
         return questionSubmitService.updateById(questionSubmit);
     }
 
+    @PostMapping("/question/update")
+    public boolean updateQuestionById(@RequestBody Question question)
+    {
+        return questionService.updateById(question);
+    }
+
 }

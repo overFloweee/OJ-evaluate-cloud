@@ -31,7 +31,7 @@ public class QuestionSubmitVO implements Serializable
     /**
      * 用户代码
      */
-    private String code;
+    private String frontendCode;
 
     /**
      * 判题信息对象

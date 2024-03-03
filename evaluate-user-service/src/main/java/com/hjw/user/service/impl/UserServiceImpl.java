@@ -78,6 +78,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
             User user = new User();
             user.setUserAccount(userAccount);
             user.setUserPassword(encryptPassword);
+            user.setUserName(userAccount);
+            // 默认头像设置
+            user.setUserAvatar("https://jtqifei-blog.oss-cn-shenzhen.aliyuncs.com/blog/2023/02/avatar_1670766855.png");
             boolean saveResult = this.save(user);
             if (!saveResult)
             {
@@ -259,13 +262,18 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         String userRole = userQueryRequest.getUserRole();
         String sortField = userQueryRequest.getSortField();
         String sortOrder = userQueryRequest.getSortOrder();
+        String phone = userQueryRequest.getPhone();
+        String email = userQueryRequest.getEmail();
+
         QueryWrapper<User> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq(id != null, "id", id);
+        queryWrapper.like(id != null, "id", id);
         queryWrapper.eq(StringUtils.isNotBlank(unionId), "unionId", unionId);
         queryWrapper.eq(StringUtils.isNotBlank(mpOpenId), "mpOpenId", mpOpenId);
         queryWrapper.eq(StringUtils.isNotBlank(userRole), "userRole", userRole);
         queryWrapper.like(StringUtils.isNotBlank(userProfile), "userProfile", userProfile);
         queryWrapper.like(StringUtils.isNotBlank(userName), "userName", userName);
+        queryWrapper.like(StringUtils.isNotBlank(phone), "phone", phone);
+        queryWrapper.like(StringUtils.isNotBlank(email), "email", email);
         queryWrapper.orderBy(SqlUtils.validSortField(sortField), sortOrder.equals(CommonConstant.SORT_ORDER_ASC),
                 sortField
         );

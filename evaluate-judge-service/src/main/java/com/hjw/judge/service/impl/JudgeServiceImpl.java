@@ -16,6 +16,7 @@ import com.hjw.model.dto.sandbox.ExecuteCodeRequest;
 import com.hjw.model.dto.sandbox.ExecuteCodeResponse;
 import com.hjw.model.entity.Question;
 import com.hjw.model.entity.QuestionSubmit;
+import com.hjw.model.enums.JudgeInfoEnum;
 import com.hjw.model.enums.QuestionSubmitStatusEnum;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -55,7 +56,7 @@ public class JudgeServiceImpl implements JudgeService
         Integer status = questionSubmit.getStatus();
         if (!QuestionSubmitStatusEnum.WAITING.getValue().equals(status))
         {
-            // throw new BusinessException(ErrorCode.OPERATION_ERROR, "正在判题中");
+            throw new BusinessException(ErrorCode.OPERATION_ERROR, "正在判题中");
         }
 
         // 判断题目是否存在
@@ -78,7 +79,7 @@ public class JudgeServiceImpl implements JudgeService
 
 
         // 调用沙盒，获取 运行信息
-        String code = questionSubmit.getCode();
+        String code = questionSubmit.getBackendCode();
         String language = questionSubmit.getLanguage();
         List<JudgeCase> judgeCaseList = JSONUtil.toList(question.getJudgeCase(), JudgeCase.class);
         // 获取输入用例
@@ -100,7 +101,8 @@ public class JudgeServiceImpl implements JudgeService
 
         JudgeInfo judgeInfo = judgeManage.doJudge(judgeContext);
 
-        // 修改数据库的判题状态 和 信息
+
+        // 修改提交判题状态 和 信息
         QuestionSubmit judgedUpdateQuestionSubmit = new QuestionSubmit();
         judgedUpdateQuestionSubmit.setId(questionSubmitId);
         judgedUpdateQuestionSubmit.setJudgeInfo(JSONUtil.toJsonStr(judgeInfo));
@@ -110,6 +112,16 @@ public class JudgeServiceImpl implements JudgeService
         {
             throw new BusinessException(ErrorCode.SYSTEM_ERROR, "题目状态更新错误");
         }
+
+        // 修改题目 通过数 和 AC 数
+        Question updateQuestion = new Question();
+        updateQuestion.setId(questionId);
+        updateQuestion.setSubmitNum(question.getSubmitNum() + 1);
+        if (JudgeInfoEnum.ACCEPTED.getValue().equals(judgeInfo.getMessage()))
+        {
+            updateQuestion.setAcceptedNum(question.getAcceptedNum() + 1);
+        }
+        questionFeignClient.updateQuestionById(updateQuestion);
 
         // 查询最新状态
         return questionFeignClient.getQuestionSubmitById(questionSubmitId);

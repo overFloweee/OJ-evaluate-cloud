@@ -8,11 +8,13 @@ import java.util.Date;
 
 /**
  * 题目
+ *
  * @TableName question
  */
-@TableName(value ="question")
+@TableName(value = "question")
 @Data
-public class Question implements Serializable {
+public class Question implements Serializable
+{
     /**
      * id
      */
@@ -33,6 +35,11 @@ public class Question implements Serializable {
      * 题目标签分类（json 数组）
      */
     private String tags;
+
+    /**
+     * 题目难度
+     */
+    private Integer difficulty;
 
     /**
      * 题目标准答案

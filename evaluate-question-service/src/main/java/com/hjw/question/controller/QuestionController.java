@@ -22,6 +22,9 @@ import com.hjw.model.dto.questionsubmit.QuestionSubmitUpdateRequest;
 import com.hjw.model.entity.Question;
 import com.hjw.model.entity.QuestionSubmit;
 import com.hjw.model.entity.User;
+import com.hjw.model.enums.JudgeHistoryEnum;
+import com.hjw.model.enums.JudgeInfoEnum;
+import com.hjw.model.vo.QuestionAnswer;
 import com.hjw.model.vo.QuestionSubmitVO;
 import com.hjw.model.vo.QuestionVO;
 import com.hjw.question.service.QuestionService;
@@ -29,6 +32,8 @@ import com.hjw.question.service.QuestionSubmitService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
+import org.springframework.http.ResponseEntity;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
@@ -59,7 +64,6 @@ public class QuestionController
     @GetMapping("/get/vo")
     public R<QuestionVO> getQuestionVOById(Long id)
     {
-        questionSubmitService.getById(null);
         if (id == null || id <= 0)
         {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
@@ -71,6 +75,21 @@ public class QuestionController
             throw new BusinessException(ErrorCode.NOT_FOUND_ERROR);
         }
         QuestionVO questionVO = questionService.getQuestionVO(question);
+
+        // 判断用户是否已经做过该题
+        User loginUser = userFeignClient.getLoginUser(request);
+        Long questionId = questionVO.getId();
+        LambdaQueryWrapper<QuestionSubmit> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(QuestionSubmit::getQuestionId, questionId);
+        wrapper.eq(loginUser != null, QuestionSubmit::getUserId, loginUser.getId());
+        wrapper.orderBy(true, false, QuestionSubmit::getId).last("limit 1");
+        QuestionSubmit one = questionSubmitService.getOne(wrapper);
+        if (one != null)
+        {
+            questionVO.setHasTried(true);
+            questionVO.setSubmitCode(one.getBackendCode());
+        }
+
 
         return R.success(questionVO);
     }
@@ -85,6 +104,23 @@ public class QuestionController
 
         Long questionId = questionService.addQuestion(questionAddRequest);
         return R.success(questionId);
+    }
+
+    /**
+     * 查看答案
+     *
+     * @return
+     */
+    @PostMapping("/searchAnswer")  // 处理 POST 请求的路径
+    public R<QuestionAnswer> seeAnswer(@RequestBody Question question)
+    {
+        Long questionId = question.getId();
+        LambdaQueryWrapper<Question> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(Question::getId, questionId);
+        Question question1 = questionService.getOne(wrapper);
+        QuestionAnswer questionAnswer = new QuestionAnswer();
+        questionAnswer.setAnswer(question1.getAnswer());
+        return R.success(questionAnswer);
     }
 
 
@@ -118,13 +154,11 @@ public class QuestionController
 
     /**
      * 删除（仅管理员或本人）
-     *
-     * @param id
-     * @return
      */
-    @DeleteMapping("/{id}")
-    public R<Boolean> deleteQuestion(@PathVariable("id") Long id)
+    @PostMapping("/delete")
+    public R<Boolean> deleteQuestion(@RequestBody QuestionUpdateRequest questionUpdateRequest)
     {
+        Long id = questionUpdateRequest.getId();
         ThrowUtils.throwIf(id == null || id <= 0, ErrorCode.NOT_FOUND_ERROR);
 
         // 判断是否存在
@@ -220,8 +254,7 @@ public class QuestionController
 
         Page<Question> questionPage = new Page<>(questionQueryRequest.getCurrent(), questionQueryRequest.getPageSize());
 
-        LambdaQueryWrapper<Question> queryWrapper = questionService.getQueryWrapper(questionQueryRequest);
-        questionService.page(questionPage, queryWrapper);
+        questionService.page(questionPage, questionService.getQueryWrapper(questionQueryRequest));
 
         return R.success(questionPage);
     }
@@ -376,20 +409,79 @@ public class QuestionController
         return R.success(result);
     }
 
+    /**
+     * 根据题目id 获取当前用户 该题的完成状态
+     *
+     * @param questionId
+     * @return
+     */
     @GetMapping("/get/question_submit/status")
-    public R<Integer> queryQuestionSubmitStatus(@RequestParam("questionId") long questionId)
+    public R<Long> queryQuestionSubmitStatus(@RequestParam("questionId") long questionId)
     {
         if (questionId <= 0)
         {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
-        QuestionSubmit questionSubmit = questionSubmitService.getById(questionId);
-        if (questionSubmit == null)
-        {
-            throw new BusinessException(ErrorCode.NOT_FOUND_ERROR);
-        }
-        return R.success(questionSubmit.getStatus());
 
+        // 该题 用户是否已经 完成，3 - 完成
+        JudgeHistoryEnum judgeHistoryEnum = questionSubmitService.queryHistoryJudge(questionId);
+
+        return R.success(judgeHistoryEnum.getValue());
+    }
+
+    /**
+     * 返回 各种难度题目的 总数
+     *
+     * @param difficulty
+     * @return
+     */
+    @GetMapping("get/question/difficulty")
+    public R<Long> getQuestionDifficultyUsingGet(long difficulty)
+    {
+        if (difficulty <= 0)
+        {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        // 返回已通过对应难度题目的数量
+        LambdaQueryWrapper<Question> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(difficulty >= 0 && difficulty <= 3, Question::getDifficulty, difficulty);
+        long count = questionService.count(wrapper);
+
+        return R.success(count);
+    }
+
+    /**
+     * 返回 已经通过的 各种难度题目的 总数
+     *
+     * @param difficulty
+     * @return
+     */
+    @GetMapping("get/question_submit/difficulty_number")
+    public R<Long> getQuestionSubmitDifficultyUsingGet(long difficulty)
+    {
+        if (difficulty <= 0)
+        {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+
+        // 返回已通过对应难度题目的集合
+        LambdaQueryWrapper<Question> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(difficulty <= 3, Question::getDifficulty, difficulty);
+        List<Question> questionListlist = questionService.list(wrapper);
+
+        LambdaQueryWrapper<QuestionSubmit> queryWrapper;
+        // 计算其中已经通过的题目
+        long total = 0;
+        for (Question question : questionListlist)
+        {
+            JudgeHistoryEnum judgeHistoryEnum = questionSubmitService.queryHistoryJudge(question.getId());
+            if (JudgeHistoryEnum.ACCEPTED.equals(judgeHistoryEnum))
+            {
+                total++;
+            }
+        }
+
+        return R.success(total);
     }
 
 
@@ -404,18 +496,6 @@ public class QuestionController
 
         boolean b = questionSubmitService.removeById(deleteRequest);
         return R.success(b);
-    }
-
-    @GetMapping("get/question/difficulty")
-    @AuthCheck
-    public R<Long> getQuestionDifficultyUsingGet(@RequestBody long difficulty)
-    {
-        if (difficulty <= 0)
-        {
-            throw new BusinessException(ErrorCode.PARAMS_ERROR);
-        }
-
-        return R.success(null);
     }
 
 
@@ -434,25 +514,6 @@ public class QuestionController
             throw new BusinessException(ErrorCode.NOT_FOUND_ERROR);
         }
         return R.success(questionSubmitVO);
-
-    }
-
-    @GetMapping("get/question_submit/difficulty_number")
-    public R<Long> getQuestionSubmitDifficultyUsingGet(@RequestParam("difficulty") long difficulty)
-    {
-        // if (id <= 0)
-        // {
-        //     throw new BusinessException(ErrorCode.PARAMS_ERROR);
-        // }
-        // QuestionSubmit questionSubmit = questionSubmitService.getById(id);
-        // QuestionSubmitVO questionSubmitVO = QuestionSubmitVO.objToVo(questionSubmit);
-        //
-        // if (questionSubmit == null)
-        // {
-        //     throw new BusinessException(ErrorCode.NOT_FOUND_ERROR);
-        // }
-        QuestionSubmitVO questionSubmitVO = new QuestionSubmitVO();
-        return R.success(1L);
 
     }
 

@@ -40,6 +40,11 @@ public class UserVO implements Serializable {
     private String userRole;
 
     /**
+     * 0 - 女，1 - 男
+     */
+    private Integer gender;
+
+    /**
      * 创建时间
      */
     private Date createTime;

@@ -1,6 +1,7 @@
 package com.hjw.question.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.hjw.model.dto.question.QuestionAddRequest;
@@ -29,7 +30,7 @@ public interface QuestionService extends IService<Question>
     /**
      * 获取查询包装类（用户根据哪里字段查询，根据前端传递的参数，生成mybatis支持的查询类）
      */
-    LambdaQueryWrapper<Question> getQueryWrapper(QuestionQueryRequest questionQueryRequest);
+    QueryWrapper<Question> getQueryWrapper(QuestionQueryRequest questionQueryRequest);
 
 
     /**

@@ -8,11 +8,13 @@ import java.util.Date;
 
 /**
  * 题目提交
+ *
  * @TableName question_submit
  */
-@TableName(value ="question_submit")
+@TableName(value = "question_submit")
 @Data
-public class QuestionSubmit implements Serializable {
+public class QuestionSubmit implements Serializable
+{
     @TableField(exist = false)
     private static final long serialVersionUID = 655665399165114261L;
     /**
@@ -27,9 +29,15 @@ public class QuestionSubmit implements Serializable {
     private String language;
 
     /**
+     * 转换后可执行代码
+     */
+    private String backendCode;
+
+    /**
      * 用户代码
      */
-    private String code;
+    private String frontedCode;
+
 
     /**
      * 判题信息（json 数组）

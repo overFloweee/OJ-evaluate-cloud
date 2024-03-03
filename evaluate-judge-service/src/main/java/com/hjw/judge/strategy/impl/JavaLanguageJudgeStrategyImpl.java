@@ -1,5 +1,6 @@
 package com.hjw.judge.strategy.impl;
 
+import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONUtil;
 import com.hjw.judge.strategy.JudgeContext;
 import com.hjw.judge.strategy.JudgeStrategy;
@@ -47,6 +48,13 @@ public class JavaLanguageJudgeStrategyImpl implements JudgeStrategy
         judgeInfoResponse.setMemory(memory);
         judgeInfoResponse.setTime(time);
 
+        // todo 非正常编译、或运行
+        if (StrUtil.isNotEmpty(judgeInfo.getMessage()))
+        {
+            judgeInfoResponse.setMessage(judgeInfo.getMessage());
+            return judgeInfoResponse;
+        }
+
 
         // 根据结果，设置 判题的 信息和状态
         JudgeInfoEnum judgeInfoEnum = JudgeInfoEnum.ACCEPTED;
@@ -65,7 +73,8 @@ public class JavaLanguageJudgeStrategyImpl implements JudgeStrategy
             // 与正确答案 的输出结果 不符
             String outputAnswer = outputList.get(i);
             String trimOutput = outputAnswer.replaceAll("\n", "").trim();
-            if (!judgeCase.getOutput().equals(trimOutput))
+            String trim = judgeCase.getOutput().replaceAll("\n", "").trim();
+            if (!trim.equals(trimOutput))
             {
                 // 答案错误
                 judgeInfoEnum = JudgeInfoEnum.WRONG_ANSWER;

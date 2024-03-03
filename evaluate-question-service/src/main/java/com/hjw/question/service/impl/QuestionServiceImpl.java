@@ -6,6 +6,7 @@ import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.hjw.api.service.UserFeignClient;
@@ -133,9 +134,9 @@ public class QuestionServiceImpl extends ServiceImpl<QuestionMapper, Question> i
      * 获取查询包装类（根据用户传递的查询包装类，生成mybatis支持的查询类）
      */
     @Override
-    public LambdaQueryWrapper<Question> getQueryWrapper(QuestionQueryRequest questionQueryRequest)
+    public QueryWrapper<Question> getQueryWrapper(QuestionQueryRequest questionQueryRequest)
     {
-        LambdaQueryWrapper<Question> queryWrapper = new LambdaQueryWrapper<>();
+        QueryWrapper<Question> queryWrapper = new QueryWrapper<>();
         if (questionQueryRequest == null)
         {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
@@ -151,22 +152,22 @@ public class QuestionServiceImpl extends ServiceImpl<QuestionMapper, Question> i
         String sortOrder = questionQueryRequest.getSortOrder();
 
 
-        queryWrapper.eq(ObjectUtil.isNotEmpty(id), Question::getId, id);
-        queryWrapper.like(StrUtil.isNotBlank(title), Question::getTitle, title);
-        queryWrapper.like(StrUtil.isNotBlank(content), Question::getContent, content);
-        queryWrapper.like(StrUtil.isNotBlank(answer), Question::getAnswer, answer);
-        queryWrapper.eq(Question::getIsDelete,false);
+        queryWrapper.eq(ObjectUtil.isNotEmpty(id), "id", id);
+        queryWrapper.like(StrUtil.isNotBlank(title), "title", title);
+        queryWrapper.like(StrUtil.isNotBlank(content), "content", content);
+        queryWrapper.like(StrUtil.isNotBlank(answer), "answer", answer);
+        queryWrapper.eq("isDelete", false);
 
         if (CollectionUtil.isNotEmpty(tags))
         {
             for (String tag : tags)
             {
-                queryWrapper.like(Question::getTags, "\"" + tag + "\"");
+                queryWrapper.like("tags", "\"" + tag + "\"");
             }
         }
-        queryWrapper.eq(ObjectUtil.isNotEmpty(userId), Question::getUserId, userId);
+        queryWrapper.like(ObjectUtil.isNotEmpty(userId), "userId", userId);
         queryWrapper.orderBy(SqlUtils.validSortField(sortField), sortOrder.equals(CommonConstant.SORT_ORDER_ASC),
-                question -> sortField
+                sortField
         );
 
         return queryWrapper;

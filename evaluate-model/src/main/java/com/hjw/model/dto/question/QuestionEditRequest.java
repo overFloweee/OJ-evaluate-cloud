@@ -38,6 +38,11 @@ public class QuestionEditRequest implements Serializable
     private String answer;
 
     /**
+     * 题目难度
+     */
+    private Integer difficulty;
+
+    /**
      * 判题用例 集合
      */
     private List<JudgeCase> judgeCase;
