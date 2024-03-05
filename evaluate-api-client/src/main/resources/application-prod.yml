@@ -1,0 +1,6 @@
+spring:
+  # 添加nacos地址，进行注册
+  cloud:
+    nacos:
+      discovery:
+        server-addr: nacos:8848

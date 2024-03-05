@@ -4,10 +4,7 @@ spring:
   cloud:
     nacos:
       discovery:
-        server-addr: localhost:8848
-  # 默认 dev 环境
-  profiles:
-    active: dev
+        server-addr: nacos:8848
   # 支持 swagger3
   mvc:
     pathmatch:
@@ -21,13 +18,13 @@ spring:
   # todo 需替换配置
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://localhost:3306/evaluate-oj
+    url: jdbc:mysql://mysql:3306/evaluate-oj
     username: root
     password: 123456
   # Redis 配置
   redis:
     database: 3
-    host: localhost
+    host: redis
     port: 6379
     timeout: 5000
   # 文件上传

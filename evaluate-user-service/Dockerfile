@@ -11,4 +11,4 @@ ADD /target/evaluate-user-service-0.0.1-SNAPSHOT.jar .
 EXPOSE 8102
 
 # 启动命令
-ENTRYPOINT ["java","-jar","/app/evaluate-user-service-0.0.1-SNAPSHOT.jar","--spring.profiles.active=prod"]
+ENTRYPOINT ["java","-Xmx300m","-jar","/app/evaluate-user-service-0.0.1-SNAPSHOT.jar","--spring.profiles.active=prod"]

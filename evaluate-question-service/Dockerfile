@@ -11,4 +11,4 @@ ADD /target/evaluate-question-service-0.0.1-SNAPSHOT.jar .
 EXPOSE 8103
 
 # 启动命令
-ENTRYPOINT ["java","-jar","/app/evaluate-question-service-0.0.1-SNAPSHOT.jar","--spring.profiles.active=prod"]
+ENTRYPOINT ["java","-Xmx300m","-jar","/app/evaluate-question-service-0.0.1-SNAPSHOT.jar","--spring.profiles.active=prod"]

@@ -11,4 +11,4 @@ ADD /target/evaluate-gateway-0.0.1-SNAPSHOT.jar .
 EXPOSE 8104
 
 # 启动命令
-ENTRYPOINT ["java","-jar","/app/evaluate-gateway-0.0.1-SNAPSHOT.jar","--spring.profiles.active=prod"]
+ENTRYPOINT ["java","-Xmx300m","-jar","/app/evaluate-gateway-0.0.1-SNAPSHOT.jar","--spring.profiles.active=prod"]
