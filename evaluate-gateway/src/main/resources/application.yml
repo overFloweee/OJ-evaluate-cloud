@@ -1,6 +1,9 @@
 server:
   port: 8101
 spring:
+  # 默认 dev 环境
+  profiles:
+    active: pord
   application:
     name: evaluate-gateway
   cloud:

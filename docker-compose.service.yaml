@@ -9,7 +9,6 @@ services:
       - "8101:8101"
     networks:
       - mynetwork
-
   evaluate-user-service:
     container_name: evaluate-user-service
     build:
@@ -21,7 +20,6 @@ services:
       - mynetwork
     depends_on: # 本服务依赖的服务，控制启动先后顺序
       - evaluate-gateway
-
   evaluate-question-service:
     container_name: evaluate-question-service
     build:
@@ -34,7 +32,6 @@ services:
     depends_on:
       - evaluate-user-service
       - evaluate-gateway
-
   evaluate-judge-service:
     container_name: evaluate-judge-service
     build:
@@ -48,7 +45,6 @@ services:
       - evaluate-user-service
       - evaluate-question-service
       - evaluate-gateway
-
   evaluate-code-sandbox-service:
     container_name: evaluate-code-sandbox-service
     build:
@@ -61,7 +57,6 @@ services:
     depends_on:
       - evaluate-gateway
       - evaluate-judge-service
-
 # 网络，不定义的话就是默认网络
 networks:
   mynetwork:

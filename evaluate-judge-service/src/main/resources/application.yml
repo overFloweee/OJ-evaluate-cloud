@@ -7,7 +7,7 @@ spring:
         server-addr: localhost:8848
   # 默认 dev 环境
   profiles:
-    active: prod
+    active: dev
   # 支持 swagger3
   mvc:
     pathmatch:

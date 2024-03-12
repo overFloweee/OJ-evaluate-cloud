@@ -120,9 +120,6 @@ public class UserController
         return R.success(userService.getLoginUserVO(user));
     }
 
-    // endregion
-
-    // region 增删改查
 
     /**
      * 创建用户

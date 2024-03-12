@@ -8,7 +8,7 @@ WORKDIR /app
 ADD /target/evaluate-gateway-0.0.1-SNAPSHOT.jar .
 
 # 暴露端口
-EXPOSE 8104
+EXPOSE 8101
 
 # 启动命令
-ENTRYPOINT ["java","-Xmx300m","-jar","/app/evaluate-gateway-0.0.1-SNAPSHOT.jar","--spring.profiles.active=prod"]
+ENTRYPOINT ["java","-jar","/app/evaluate-gateway-0.0.1-SNAPSHOT.jar","--spring.profiles.active=prod"]

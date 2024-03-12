@@ -11,4 +11,4 @@ ADD /target/evaluate-code-sandbox-service-0.0.1-SNAPSHOT.jar .
 EXPOSE 8105
 
 # 启动命令
-ENTRYPOINT ["java","-Xmx300m","-jar","/app/evaluate-code-sandbox-service-0.0.1-SNAPSHOT.jar","--spring.profiles.active=prod"]
+ENTRYPOINT ["java","-jar","/app/evaluate-code-sandbox-service-0.0.1-SNAPSHOT.jar","--spring.profiles.active=prod"]
