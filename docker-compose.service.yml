@@ -1,0 +1,62 @@
+version: '3'
+services:
+  evaluate-gateway:
+    container_name: evaluate-gateway
+    build: # 服务的 Docker 构建文件位置
+      context: ./evaluate-gateway
+      dockerfile: Dockerfile
+    ports:
+      - "8101:8101"
+    networks:
+      - mynetwork
+  evaluate-user-service:
+    container_name: evaluate-user-service
+    build:
+      context: ./evaluate-user-service
+      dockerfile: Dockerfile
+    ports:
+      - "8102:8102"
+    networks:
+      - mynetwork
+    depends_on: # 本服务依赖的服务，控制启动先后顺序
+      - evaluate-gateway
+  evaluate-question-service:
+    container_name: evaluate-question-service
+    build:
+      context: ./evaluate-question-service
+      dockerfile: Dockerfile
+    ports:
+      - "8103:8103"
+    networks:
+      - mynetwork
+    depends_on:
+      - evaluate-user-service
+      - evaluate-gateway
+  evaluate-judge-service:
+    container_name: evaluate-judge-service
+    build:
+      context: ./evaluate-judge-service
+      dockerfile: Dockerfile
+    ports:
+      - "8104:8104"
+    networks:
+      - mynetwork
+    depends_on:
+      - evaluate-user-service
+      - evaluate-question-service
+      - evaluate-gateway
+  evaluate-code-sandbox-service:
+    container_name: evaluate-code-sandbox-service
+    build:
+      context: ./evaluate-code-sandbox-service
+      dockerfile: Dockerfile
+    ports:
+      - "8105:8105"
+    networks:
+      - mynetwork
+    depends_on:
+      - evaluate-gateway
+      - evaluate-judge-service
+# 网络，不定义的话就是默认网络
+networks:
+  mynetwork:
