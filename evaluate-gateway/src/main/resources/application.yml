@@ -3,7 +3,7 @@ server:
 spring:
   # 默认 dev 环境
   profiles:
-    active: pord
+    active: dev
   application:
     name: evaluate-gateway
   cloud:
