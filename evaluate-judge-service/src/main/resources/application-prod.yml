@@ -23,7 +23,6 @@ spring:
     port: 6379
     timeout: 5000
   rabbitmq:
-#    addresses: rabbitmq
     host: rabbitmq
     port: 5672
     username: guest
