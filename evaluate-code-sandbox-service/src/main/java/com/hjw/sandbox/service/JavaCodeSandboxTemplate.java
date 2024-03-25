@@ -58,11 +58,11 @@ public class JavaCodeSandboxTemplate implements CodeSandbox
 
         // 3. 执行代码，得到输出结果
         List<ExecuteMessage> executeRunMessageList = executeFile(userCodeFile, inputList);
-
+        System.out.println("执行完成");
 
         // 4. 收集、整理输出结果
         ExecuteCodeResponse outputResponse = getOutputResponse(executeRunMessageList);
-
+        System.out.println("整理结果");
 
         // 5. 文件清理
         boolean isDel = deleteFile(userCodeFile);
@@ -85,6 +85,7 @@ public class JavaCodeSandboxTemplate implements CodeSandbox
     public File saveCodeToFile(String code)
     {
         String userDir = System.getProperty("user.dir");
+        System.out.println("userDir: " + userDir);
         String globalTempFileLocation = userDir + File.separator + GLOBAL_CODE_DIR_NAME;
         // 判断 全局代码目录是否存在
         if (!FileUtil.exist(globalTempFileLocation))
@@ -146,14 +147,19 @@ public class JavaCodeSandboxTemplate implements CodeSandbox
      */
     public List<ExecuteMessage> executeFile(File userCodeFile, List<String> inputList)
     {
+        System.out.println("开始执行代码");
         // 不使用绝对路径，谨防其中含有中文,javac的路径不能含有中文
         List<String> splitList = StrUtil.split(userCodeFile.toString(), File.separator);
         String relativeCompilePath = splitList.get(splitList.size() - 3) + File.separator + splitList.get(
                 splitList.size() - 2) + File.separator + splitList.get(splitList.size() - 1);
 
+        System.out.println("relativeCompilePath: " + relativeCompilePath);
+
         ArrayList<ExecuteMessage> executeRunMessageList = new ArrayList<>();
 
         String runPath = relativeCompilePath.substring(0, relativeCompilePath.length() - 9);
+        System.out.println("runPath" + runPath);
+        System.out.println("inputList" + inputList);
         for (String inputStr : inputList)
         {
             String runCmd = String.format("java -Dfile.encoding=utf-8 -cp %s Main %s", runPath, inputStr);

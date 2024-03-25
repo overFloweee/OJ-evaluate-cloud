@@ -41,6 +41,7 @@ public class InnerCodeSandBoxController
 
 
         String osName = System.getProperty("os.name");
+        System.out.println("操作系统是：" + osName);
         if (osName.contains("Linux"))
         {
             return javaDockerCodeSandbox.executeCode(executeCodeRequest);
