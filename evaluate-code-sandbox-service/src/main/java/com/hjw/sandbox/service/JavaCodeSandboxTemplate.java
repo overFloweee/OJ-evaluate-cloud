@@ -34,6 +34,7 @@ public class JavaCodeSandboxTemplate implements CodeSandbox
     @Override
     public ExecuteCodeResponse executeCode(ExecuteCodeRequest executeCodeRequest)
     {
+        System.out.println("docker执行");
         List<String> inputList = executeCodeRequest.getInputList();
         String code = executeCodeRequest.getCode();
         String language = executeCodeRequest.getLanguage();
@@ -57,6 +58,7 @@ public class JavaCodeSandboxTemplate implements CodeSandbox
 
 
         // 3. 执行代码，得到输出结果
+        System.out.println("开始执行方法外代码");
         List<ExecuteMessage> executeRunMessageList = executeFile(userCodeFile, inputList);
         System.out.println("执行完成");
 
@@ -147,7 +149,7 @@ public class JavaCodeSandboxTemplate implements CodeSandbox
      */
     public List<ExecuteMessage> executeFile(File userCodeFile, List<String> inputList)
     {
-        System.out.println("开始执行代码");
+        System.out.println("开始执行方法内代码");
         // 不使用绝对路径，谨防其中含有中文,javac的路径不能含有中文
         List<String> splitList = StrUtil.split(userCodeFile.toString(), File.separator);
         String relativeCompilePath = splitList.get(splitList.size() - 3) + File.separator + splitList.get(
