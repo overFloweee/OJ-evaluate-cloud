@@ -23,7 +23,7 @@ spring:
     driver-class-name: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://localhost:3306/evaluate-oj
     username: root
-    password: H2232285004
+    password: 123456
   # Redis 配置
   redis:
     database: 3
