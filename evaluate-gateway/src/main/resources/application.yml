@@ -2,7 +2,7 @@ server:
   port: 8101
 spring:
   profiles:
-    active: dev
+    active: prod
   application:
     name: evaluate-gateway
   cloud:
