@@ -11,7 +11,7 @@ spring:
       routes:
         - id: evaluate-user-service        # 路由规则id，自定义，唯一
           uri: lb://evaluate-user-service   # 路由的目标服务，lb代表负载均衡，会从注册中心拉取服务列表
-          predicates:                       # 路由断言，判断当前请求是否符合当前规则，符合则路由到目标服务
+          predicates: # 路由断言，判断当前请求是否符合当前规则，符合则路由到目标服务
             - Path=/api/user/**                 # 这里是以请求路径作为判断规则
         - id: evaluate-question-service
           uri: lb://evaluate-question-service
@@ -34,3 +34,4 @@ knife4j:
       enabled: true
       # ④ 第四行配置，聚合子服务全部为Swagger2规范的文档
       version: swagger2
+
