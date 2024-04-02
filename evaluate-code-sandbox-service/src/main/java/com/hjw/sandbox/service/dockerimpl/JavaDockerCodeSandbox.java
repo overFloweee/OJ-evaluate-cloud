@@ -10,6 +10,7 @@ import com.github.dockerjava.core.command.ExecStartResultCallback;
 import com.hjw.model.dto.sandbox.ExecuteCodeResponse;
 import com.hjw.model.dto.sandbox.ExecuteMessage;
 import com.hjw.sandbox.service.JavaCodeSandboxTemplate;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StopWatch;
@@ -22,6 +23,7 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 @Component
+@Slf4j
 public class JavaDockerCodeSandbox extends JavaCodeSandboxTemplate
 {
 
@@ -46,6 +48,7 @@ public class JavaDockerCodeSandbox extends JavaCodeSandboxTemplate
     @Override
     public List<ExecuteMessage> executeFile(File userCodeFile, List<String> inputList)
     {
+        log.info("docker执行");
         if (!isLoad)
         {
             dockerClient = DockerClientBuilder.getInstance().build();
@@ -79,7 +82,7 @@ public class JavaDockerCodeSandbox extends JavaCodeSandboxTemplate
         hostConfig.withReadonlyRootfs(true);
         hostConfig.setBinds(new Bind(userCodeFile.getParentFile().toString(), new Volume("/app")));
         CreateContainerResponse response = containerCmd.withAttachStdin(true)  // 连接输入和输出
-                .withAttachStderr(true).withAttachStdout(true).withTty(true)          // 可交互终端
+                .withAttachStderr(true).withAttachStdout(true).withTty(true)   // 可交互终端
                 .withHostConfig(hostConfig)       // 配置
                 .withNetworkDisabled(true)  // 容器内部禁用网络
                 .exec();

@@ -25,8 +25,6 @@ public class RemoteCodeSandbox implements CodeSandbox
     private static final String AUTH_REQUEST_SECRET = "secretKey";
     private final CodeSandboxFeignClient codeSandboxFeignClient;
 
-    private final UserFeignClient userFeignClient;
-
     @Override
     public ExecuteCodeResponse executeCode(ExecuteCodeRequest executeCodeRequest)
     {
@@ -43,7 +41,6 @@ public class RemoteCodeSandbox implements CodeSandbox
 
 
         // 携带参数
-
         ExecuteCodeResponse executeCodeResponse = codeSandboxFeignClient.executeCode(executeCodeRequest,
                 AUTH_REQUEST_SECRET
         );

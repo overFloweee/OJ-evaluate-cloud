@@ -29,12 +29,18 @@ public class MyMessageConsumer
         long questionSubmitId = Long.parseLong(message);
         try
         {
-            judgeService.doJudge(questionSubmitId);
+            QuestionSubmit questionSubmit = judgeService.doJudge(questionSubmitId);
+            // 判题失败，
+            if ("{}".equals(questionSubmit.getJudgeInfo()))
+            {
+                channel.basicNack(deliveryTag,false,true);
+            }
+            // 用于确认已经接收并处理了消息 ack
             channel.basicAck(deliveryTag, false);
         }
         catch (Exception e)
         {
-            channel.basicNack(deliveryTag,false,false);
+            channel.basicNack(deliveryTag,false,true);
         }
 
     }

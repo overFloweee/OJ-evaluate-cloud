@@ -22,6 +22,7 @@ public class InitRabbitMq
             ConnectionFactory factory = new ConnectionFactory();
             factory.setHost(host);
             Connection connection = factory.newConnection();
+            // 创建交换机 路由
             Channel channel = connection.createChannel();
             String EXCHANGE_NAME = "code_exchange";
             channel.exchangeDeclare(EXCHANGE_NAME, "direct");

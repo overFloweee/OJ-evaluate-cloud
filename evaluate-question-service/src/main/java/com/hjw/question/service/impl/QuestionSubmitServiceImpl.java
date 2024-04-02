@@ -114,7 +114,6 @@ public class QuestionSubmitServiceImpl extends ServiceImpl<QuestionSubmitMapper,
         //     judgeClient.doJudge(questionSubmitId);
         // });
 
-
         return questionSubmitId;
     }
 

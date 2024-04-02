@@ -1,5 +1,9 @@
 package com.hjw.sandbox.controller;
 
+import cn.hutool.json.JSONUtil;
+import com.github.dockerjava.api.DockerClient;
+import com.github.dockerjava.api.model.Info;
+import com.github.dockerjava.core.DockerClientBuilder;
 import com.hjw.model.dto.sandbox.ExecuteCodeRequest;
 import com.hjw.model.dto.sandbox.ExecuteCodeResponse;
 import com.hjw.sandbox.service.dockerimpl.JavaDockerCodeSandbox;
@@ -47,6 +51,19 @@ public class InnerCodeSandBoxController
             return javaDockerCodeSandbox.executeCode(executeCodeRequest);
         }
         return javaNativeCodeSandbox.executeCode(executeCodeRequest);
+    }
+
+    @GetMapping("/test")
+    public String test()
+    {
+        // 连接docker服务器
+        DockerClient dockerClient = DockerClientBuilder.getInstance("tcp://192.168.60.200:2375").build();
+
+        // 获取服务器信息
+        Info info = dockerClient.infoCmd().exec();
+        String infoStr = JSONUtil.toJsonStr(info);
+        System.out.println(infoStr);
+        return infoStr;
     }
 
 
