@@ -44,7 +44,7 @@ create table if not exists question_submit
 )
     comment '题目提交' collate = utf8mb4_unicode_ci;
 
-create index idx_questionId
+create  index  idx_questionId
     on question_submit (questionId);
 
 create index idx_userId
